@@ -23,25 +23,61 @@ class PaginatedStudentsResult {
 
     if (responseData is List) {
       rawList = responseData;
-    } else if (responseData is Map<String, dynamic>) {
-      final dataField = responseData['data'];
-      if (dataField is List) {
-        rawList = dataField;
-      } else if (dataField is Map<String, dynamic>) {
-        if (dataField['data'] is List) {
-          rawList = dataField['data'];
+    } else if (responseData is Map) {
+      final mapData = Map<String, dynamic>.from(responseData);
+
+      List? findList(Map<String, dynamic> map) {
+        for (final key in ['data', 'students', 'items', 'results', 'records']) {
+          final val = map[key];
+          if (val is List) return val;
         }
-        total = int.tryParse(dataField['total']?.toString() ?? '0') ?? 0;
-        current = int.tryParse(dataField['current_page']?.toString() ?? '1') ?? 1;
-        last = int.tryParse(dataField['last_page']?.toString() ?? '1') ?? 1;
+        return null;
+      }
+
+      final topList = findList(mapData);
+      if (topList != null) {
+        rawList = topList;
+      } else if (mapData['data'] is Map) {
+        final nestedMap = Map<String, dynamic>.from(mapData['data'] as Map);
+        rawList = findList(nestedMap);
+
+        total = int.tryParse(nestedMap['total']?.toString() ?? '') ??
+            int.tryParse(nestedMap['total_count']?.toString() ?? '') ??
+            0;
+        current = int.tryParse(nestedMap['current_page']?.toString() ?? '') ??
+            int.tryParse(nestedMap['page']?.toString() ?? '') ??
+            1;
+        last = int.tryParse(nestedMap['last_page']?.toString() ?? '') ??
+            int.tryParse(nestedMap['total_pages']?.toString() ?? '') ??
+            1;
+      }
+
+      if (total == 0) {
+        total = int.tryParse(mapData['total']?.toString() ?? '') ??
+            int.tryParse(mapData['total_count']?.toString() ?? '') ??
+            int.tryParse(mapData['count']?.toString() ?? '') ??
+            0;
+
+        if (mapData['meta'] is Map) {
+          final meta = Map<String, dynamic>.from(mapData['meta'] as Map);
+          total = total != 0 ? total : (int.tryParse(meta['total']?.toString() ?? '') ?? 0);
+          current = int.tryParse(meta['current_page']?.toString() ?? '') ?? current;
+          last = int.tryParse(meta['last_page']?.toString() ?? '') ?? last;
+        }
       }
     }
 
     if (rawList is List) {
-      studentsList = rawList
-          .whereType<Map<String, dynamic>>()
-          .map((item) => Student.fromJson(item))
-          .toList();
+      for (final item in rawList) {
+        if (item is Map) {
+          try {
+            final itemMap = Map<String, dynamic>.from(item);
+            studentsList.add(Student.fromJson(itemMap));
+          } catch (_) {
+            // Defensive skip of invalid item
+          }
+        }
+      }
       if (total == 0) {
         total = studentsList.length;
       }

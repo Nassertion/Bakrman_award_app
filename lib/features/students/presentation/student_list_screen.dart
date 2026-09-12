@@ -86,6 +86,7 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Action Bar (Search, Filter, Export, Refresh)
         LayoutBuilder(
@@ -109,8 +110,10 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
               ),
             );
 
-            final actionButtons = Row(
-              mainAxisSize: MainAxisSize.min,
+            final actionButtons = Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 OutlinedButton.icon(
                   icon: const Icon(Icons.filter_alt_outlined, size: 18),
@@ -123,7 +126,6 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
                   ),
                   onPressed: () => StudentFilterDrawer.show(context),
                 ),
-                const SizedBox(width: 8),
                 AppButton(
                   text: 'تصدير CSV',
                   icon: Icons.download_rounded,
@@ -131,7 +133,6 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
                   isLoading: _isExporting,
                   onPressed: _onExportCsv,
                 ),
-                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.refresh_rounded),
                   tooltip: 'تحديث السجلات',
@@ -150,13 +151,11 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
               );
             }
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 searchField,
                 const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: actionButtons,
-                ),
+                actionButtons,
               ],
             );
           },
@@ -209,11 +208,9 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
             },
           ),
         ] else ...[
-          Expanded(
-            child: isDesktop
-                ? _buildDesktopTableView(context, state.result!.students)
-                : _buildMobileCardView(context, state.result!.students),
-          ),
+          isDesktop
+              ? _buildDesktopTableView(context, state.result!.students)
+              : _buildMobileCardView(context, state.result!.students),
         ],
       ],
     );
@@ -221,8 +218,8 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
 
   Widget _buildDesktopTableView(BuildContext context, List<Student> students) {
     return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: Container(
-        width: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(12),
@@ -288,6 +285,8 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
 
   Widget _buildMobileCardView(BuildContext context, List<Student> students) {
     return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: students.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {

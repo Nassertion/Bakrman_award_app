@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../../app/config/api_config.dart';
 import '../../../core/errors/error_handler.dart';
@@ -17,8 +18,22 @@ class StudentRepository {
         ApiConfig.adminStudents,
         queryParameters: filter.toApiParams(),
       );
-      return PaginatedStudentsResult.fromApiResponse(response.data);
+
+      final data = response.data;
+      final status = response.statusCode;
+      final topKeys = data is Map ? data.keys.join(', ') : 'N/A (not a map)';
+      final hasDataKey = data is Map ? data.containsKey('data') : false;
+      final dataType = data?.runtimeType.toString() ?? 'null';
+
+      final result = PaginatedStudentsResult.fromApiResponse(data);
+
+      debugPrint(
+        '[StudentsAPI] GET ${ApiConfig.adminStudents} | Status: $status | TopKeys: [$topKeys] | HasDataKey: $hasDataKey | DataType: $dataType | Count: ${result.students.length}',
+      );
+
+      return result;
     } catch (e) {
+      debugPrint('[StudentsAPI] GET ${ApiConfig.adminStudents} Error: $e');
       throw ErrorHandler.handle(e);
     }
   }

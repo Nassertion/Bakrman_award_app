@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/auth/domain/admin_user.dart';
 
 // ─── Re-export AuthState so auth_controller stays the single source ──────────

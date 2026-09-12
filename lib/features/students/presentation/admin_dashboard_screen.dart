@@ -40,173 +40,182 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       femaleCount = students.where((s) => s.gender.toLowerCase() == 'female').length;
     }
 
-    final mainContent = SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
+    final mainContent = LayoutBuilder(
+      builder: (context, screenConstraints) {
+        final isMobile = screenConstraints.maxWidth < 600;
+        final isNarrowPhone = screenConstraints.maxWidth < 480;
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(isMobile ? 12 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'لوحة التحكم والإدارة',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+              // Header Layout (Responsive Stack on Mobile, Row on Desktop)
+              LayoutBuilder(
+                builder: (context, headerConstraints) {
+                  final titleColumn = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'لوحة التحكم والإدارة',
+                        style: (isMobile
+                                ? Theme.of(context).textTheme.titleLarge
+                                : Theme.of(context).textTheme.headlineMedium)
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'أهلاً بك، ${authState.user?.username ?? 'مسؤول النظام'}! مرحباً بك في منظومة إدارة الطلاب.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: isMobile ? 12 : 14,
                         ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'أهلاً بك، ${authState.user?.username ?? 'مسؤول النظام'}! مرحباً بك في منظومة إدارة الطلاب.',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                  ),
-                ],
+                      ),
+                    ],
+                  );
+
+                  final actionButton = ElevatedButton.icon(
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('تسجيل طالب جديد'),
+                    onPressed: () => context.go('/registration'),
+                  );
+
+                  if (headerConstraints.maxWidth > 600) {
+                    return Row(
+                      children: [
+                        Expanded(child: titleColumn),
+                        const SizedBox(width: 16),
+                        actionButton,
+                      ],
+                    );
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      titleColumn,
+                      const SizedBox(height: 12),
+                      actionButton,
+                    ],
+                  );
+                },
               ),
-              const Spacer(),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('تسجيل طالب جديد'),
-                onPressed: () => context.go('/registration'),
+              SizedBox(height: isMobile ? 16 : 24),
+
+              // Statistics Overview Grid (Responsive 4 -> 2 -> 1)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final statCards = [
+                    StudentStatCard(
+                      title: 'إجمالي الطلاب',
+                      value: '$totalCount',
+                      icon: Icons.people_alt_rounded,
+                      iconColor: AppColors.primary,
+                      containerColor: AppColors.primaryContainer,
+                    ),
+                    StudentStatCard(
+                      title: 'متوسط المعدل',
+                      value: avgGrade.toStringAsFixed(1),
+                      icon: Icons.auto_graph_rounded,
+                      iconColor: AppColors.accent,
+                      containerColor: AppColors.accentContainer,
+                    ),
+                    StudentStatCard(
+                      title: 'ذكور',
+                      value: '$maleCount',
+                      icon: Icons.male_rounded,
+                      iconColor: Colors.blue,
+                      containerColor: Colors.blue.withValues(alpha: 0.1),
+                    ),
+                    StudentStatCard(
+                      title: 'إناث',
+                      value: '$femaleCount',
+                      icon: Icons.female_rounded,
+                      iconColor: Colors.pink,
+                      containerColor: Colors.pink.withValues(alpha: 0.1),
+                    ),
+                  ];
+
+                  if (constraints.maxWidth > 900) {
+                    return Row(
+                      children: [
+                        Expanded(child: statCards[0]),
+                        const SizedBox(width: 16),
+                        Expanded(child: statCards[1]),
+                        const SizedBox(width: 16),
+                        Expanded(child: statCards[2]),
+                        const SizedBox(width: 16),
+                        Expanded(child: statCards[3]),
+                      ],
+                    );
+                  } else if (!isNarrowPhone) {
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: statCards[0]),
+                            const SizedBox(width: 12),
+                            Expanded(child: statCards[1]),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: statCards[2]),
+                            const SizedBox(width: 12),
+                            Expanded(child: statCards[3]),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Stack vertically on narrow phones (< 480px) to avoid squeeze/overflow
+                  return Column(
+                    children: [
+                      statCards[0],
+                      const SizedBox(height: 10),
+                      statCards[1],
+                      const SizedBox(height: 10),
+                      statCards[2],
+                      const SizedBox(height: 10),
+                      statCards[3],
+                    ],
+                  );
+                },
+              ),
+              SizedBox(height: isMobile ? 16 : 32),
+
+              // Main Section: Students List Table / Cards
+              CustomCard(
+                padding: EdgeInsets.all(isMobile ? 12 : 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.list_alt_rounded, color: AppColors.primary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'سجل الطلاب والفرز المتقدم',
+                            style: (isMobile
+                                    ? Theme.of(context).textTheme.titleMedium
+                                    : Theme.of(context).textTheme.titleLarge)
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const StudentListContent(),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Statistics Overview Grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 900
-                  ? 4
-                  : constraints.maxWidth > 600
-                      ? 2
-                      : 1;
-
-              if (crossAxisCount == 4) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: StudentStatCard(
-                        title: 'إجمالي الطلاب المسجلين',
-                        value: '$totalCount',
-                        icon: Icons.people_alt_rounded,
-                        iconColor: AppColors.primary,
-                        containerColor: AppColors.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: StudentStatCard(
-                        title: 'متوسط الدرجات / المعدل',
-                        value: avgGrade.toStringAsFixed(1),
-                        icon: Icons.auto_graph_rounded,
-                        iconColor: AppColors.accent,
-                        containerColor: AppColors.accentContainer,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: StudentStatCard(
-                        title: 'عدد الطلاب (ذكور)',
-                        value: '$maleCount',
-                        icon: Icons.male_rounded,
-                        iconColor: Colors.blue,
-                        containerColor: Colors.blue.withOpacity(0.1),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: StudentStatCard(
-                        title: 'عدد الطالبات (إناث)',
-                        value: '$femaleCount',
-                        icon: Icons.female_rounded,
-                        iconColor: Colors.pink,
-                        containerColor: Colors.pink.withOpacity(0.1),
-                      ),
-                    ),
-                  ],
-                );
-              }
-
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StudentStatCard(
-                          title: 'إجمالي الطلاب',
-                          value: '$totalCount',
-                          icon: Icons.people_alt_rounded,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StudentStatCard(
-                          title: 'متوسط المعدل',
-                          value: avgGrade.toStringAsFixed(1),
-                          icon: Icons.auto_graph_rounded,
-                          iconColor: AppColors.accent,
-                          containerColor: AppColors.accentContainer,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: StudentStatCard(
-                          title: 'ذكور',
-                          value: '$maleCount',
-                          icon: Icons.male_rounded,
-                          iconColor: Colors.blue,
-                          containerColor: Colors.blue.withOpacity(0.1),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: StudentStatCard(
-                          title: 'إناث',
-                          value: '$femaleCount',
-                          icon: Icons.female_rounded,
-                          iconColor: Colors.pink,
-                          containerColor: Colors.pink.withOpacity(0.1),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 32),
-
-          // Main Section: Students List Table / Cards
-          CustomCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.list_alt_rounded, color: AppColors.primary),
-                    const SizedBox(width: 10),
-                    Text(
-                      'سجل الطلاب والفرز المتقدم',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const StudentListContent(),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
 
     if (isDesktop) {
