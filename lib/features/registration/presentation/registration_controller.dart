@@ -52,7 +52,7 @@ class RegistrationController extends StateNotifier<RegistrationFormState> {
 
       state = state.copyWith(
         isSubmitting: false,
-        submittedStudentId: studentId,
+        submittedStudentId: studentId > 0 ? studentId : null,
       );
       return true;
     } catch (e) {

@@ -68,14 +68,22 @@ class RegistrationRepository {
       );
 
       final responseData = response.data;
-      if (responseData is Map<String, dynamic> && responseData['success'] == true) {
-        final data = responseData['data'];
-        if (data is Map<String, dynamic> && data['id'] != null) {
-          return data['id'] is int ? data['id'] : int.parse(data['id'].toString());
+      final status = response.statusCode ?? 200;
+      if (status >= 200 && status < 300) {
+        int studentId = 0;
+        if (responseData is Map) {
+          final mapData = Map<String, dynamic>.from(responseData);
+          if (mapData['data'] is Map && mapData['data']['id'] != null) {
+            studentId = int.tryParse(mapData['data']['id'].toString()) ?? 0;
+          } else if (mapData['id'] != null) {
+            studentId = int.tryParse(mapData['id'].toString()) ?? 0;
+          } else if (mapData['student'] is Map && mapData['student']['id'] != null) {
+            studentId = int.tryParse(mapData['student']['id'].toString()) ?? 0;
+          }
         }
-        return 0;
+        return studentId;
       }
-      throw ErrorHandler.parseResponseError(response.statusCode, responseData);
+      throw ErrorHandler.parseResponseError(status, responseData);
     } catch (e) {
       throw ErrorHandler.handle(e);
     }

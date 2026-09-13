@@ -9,18 +9,17 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/custom_card.dart';
 import '../../../core/widgets/responsive_layout.dart';
-import 'registration_controller.dart';
-import 'widgets/cert_image_picker.dart';
-import 'widgets/registration_success_dialog.dart';
+import '../../registration/presentation/registration_controller.dart';
+import '../../registration/presentation/widgets/cert_image_picker.dart';
 
-class RegistrationScreen extends ConsumerStatefulWidget {
-  const RegistrationScreen({super.key});
+class AdminRegistrationScreen extends ConsumerStatefulWidget {
+  const AdminRegistrationScreen({super.key});
 
   @override
-  ConsumerState<RegistrationScreen> createState() => _RegistrationScreenState();
+  ConsumerState<AdminRegistrationScreen> createState() => _AdminRegistrationScreenState();
 }
 
-class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
+class _AdminRegistrationScreenState extends ConsumerState<AdminRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Personal Info
@@ -62,42 +61,24 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   }
 
   void _resetForm() {
-    // Clear FormField validation and every text controller first.
     _formKey.currentState?.reset();
-
-    for (final controller in <TextEditingController>[
-      _firstNameController,
-      _secondNameController,
-      _thirdNameController,
-      _lastNameController,
-      _schoolNameController,
-      _gradeController,
-      _phone1Controller,
-      _phone2Controller,
-      _addressController,
-    ]) {
-      controller.clear();
-    }
-
-    if (!mounted) {
-      return;
-    }
-
+    _firstNameController.clear();
+    _secondNameController.clear();
+    _thirdNameController.clear();
+    _lastNameController.clear();
+    _schoolNameController.clear();
+    _gradeController.clear();
+    _phone1Controller.clear();
+    _phone2Controller.clear();
+    _addressController.clear();
     setState(() {
-      // Restore every non-text field to its initial value.
       _selectedGender = 'male';
       _selectedGovernorate = 1;
       _selectedClass = 9;
-
-      // Remove every selected document.
       _certImage = null;
       _additionalImage1 = null;
-
-      // Remove certificate validation state.
       _certImageError = false;
     });
-
-    // Clear controller state too, including the previous submission id/error.
     ref.read(registrationControllerProvider.notifier).resetState();
   }
 
@@ -110,9 +91,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     if (!isFormValid || _certImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'يرجى تصحيح الأخطاء ورفع صورة الشهادة الدراسية المطلوبة.',
-          ),
+          content: Text('يرجى تصحيح الأخطاء ورفع صورة الشهادة الدراسية المطلوبة.'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -135,66 +114,66 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
           schoolName: _schoolNameController.text.trim(),
           grade: double.parse(_gradeController.text.trim()),
           certImage: _certImage!,
-          additionalImages: additionalImages.isNotEmpty
-              ? additionalImages
-              : null,
-          phone1: _phone1Controller.text.trim().isNotEmpty
-              ? _phone1Controller.text.trim()
-              : null,
-          phone2: _phone2Controller.text.trim().isNotEmpty
-              ? _phone2Controller.text.trim()
-              : null,
-          address: _addressController.text.trim().isNotEmpty
-              ? _addressController.text.trim()
-              : null,
+          additionalImages: additionalImages.isNotEmpty ? additionalImages : null,
+          phone1: _phone1Controller.text.trim().isNotEmpty ? _phone1Controller.text.trim() : null,
+          phone2: _phone2Controller.text.trim().isNotEmpty ? _phone2Controller.text.trim() : null,
+          address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
         );
 
     if (success && mounted) {
-      // Read the id BEFORE resetting controller state.
-      final submittedId =
-          ref.read(registrationControllerProvider).submittedStudentId;
-
-      // A successful response is the ONLY point where the form is cleared.
+      final submittedId = ref.read(registrationControllerProvider).submittedStudentId;
       _resetForm();
 
-      final messenger = ScaffoldMessenger.of(context);
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 4),
-            margin: const EdgeInsets.all(16),
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'تم تسجيل الطالب بنجاح',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white),
+              SizedBox(width: 10),
+              Text(
+                'تمت إضافة الطالب بنجاح',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ],
           ),
-        );
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 4),
+        ),
+      );
 
-      if (submittedId != null) {
-        RegistrationSuccessDialog.show(
-          context,
-          submittedId,
-          () {
-            // The form is already reset. This keeps the "new registration"
-            // action idempotent and guarantees a fresh form.
-            _resetForm();
-          },
-        );
-      }
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogCtx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+              SizedBox(width: 10),
+              Text('تمت الإضافة بنجاح'),
+            ],
+          ),
+          content: Text(
+            submittedId != null && submittedId > 0
+                ? 'تم تسجيل بيانات الطالب وتحديث القائمة بنجاح.\nرقم المعرف المخصص: #$submittedId'
+                : 'تم تسجيل بيانات الطالب وتحديث القائمة بنجاح.',
+            style: const TextStyle(height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('إضافة طالب آخر'),
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('العودة للوحة التحكم'),
+              onPressed: () {
+                Navigator.of(dialogCtx).pop();
+                context.go('/admin');
+              },
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -205,32 +184,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              // padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.school_rounded,
-                color: AppColors.primary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(child: Text(AppConstants.appName)),
-          ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'العودة للوحة التحكم',
+          onPressed: () => context.go('/admin'),
         ),
+        title: const Text('تسجيل طالب جديد - لوحة الإدارة'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.admin_panel_settings_outlined, size: 16),
-              label: const Text('لوحة التحكم'),
-              onPressed: () => context.go('/admin/login'),
-            ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'إعادة ضبط النموذج',
+            onPressed: _resetForm,
           ),
         ],
       ),
@@ -247,7 +211,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Hero Header Section
+                  // Admin Registration Banner
                   CustomCard(
                     color: AppColors.primaryContainer,
                     child: Row(
@@ -257,65 +221,43 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'نموذج تسجيل بيانات الطلاب',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(
+                                'إضافة طالب جديد في المنظومة',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                       color: AppColors.primaryDark,
                                       fontWeight: FontWeight.bold,
                                     ),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'يرجى إدخال البيانات الشخصية والأكاديمية بدقة ورفع صورة الشهادة المدرسية لإتمام التسجيل في المنظومة.',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: AppColors.primaryDark.withOpacity(
-                                        0.8,
-                                      ),
-                                    ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'نموذج الإدخال المباشر للطلاب من قبل مسؤول النظام. بعد الإضافة سينعكس الطالب فوراً في السجلات.',
+                                style: TextStyle(color: AppColors.primaryDark, fontSize: 13),
                               ),
                             ],
                           ),
                         ),
-                        if (isDesktop) ...[
-                          const SizedBox(width: 24),
-                          const Icon(
-                            Icons.verified_user_rounded,
-                            size: 64,
-                            color: AppColors.primary,
-                          ),
-                        ],
+                        const SizedBox(width: 12),
+                        const Icon(Icons.person_add_alt_1_rounded, size: 40, color: AppColors.primary),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   if (state.errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.1),
+                        color: AppColors.error.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.error.withOpacity(0.4),
-                        ),
+                        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: AppColors.error,
-                          ),
+                          const Icon(Icons.error_outline, color: AppColors.error),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               state.errorMessage!,
-                              style: const TextStyle(
-                                color: AppColors.error,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -324,11 +266,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // SECTION 1: Personal Information
-                  _buildSectionHeader(
-                    '١. البيانات الشخصية',
-                    Icons.person_rounded,
-                  ),
+                  // SECTION 1: Personal Info
+                  _buildSectionHeader('١. البيانات الشخصية', Icons.person_rounded),
                   const SizedBox(height: 12),
                   CustomCard(
                     child: Column(
@@ -344,11 +283,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'الاسم الأول',
                                       hint: 'مثال: محمد',
                                       controller: _firstNameController,
-                                      validator: (v) =>
-                                          Validators.requiredField(
-                                            v,
-                                            'الاسم الأول',
-                                          ),
+                                      validator: (v) => Validators.requiredField(v, 'الاسم الأول'),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -357,11 +292,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'اسم الأب',
                                       hint: 'مثال: عبد الله',
                                       controller: _secondNameController,
-                                      validator: (v) =>
-                                          Validators.requiredField(
-                                            v,
-                                            'اسم الأب',
-                                          ),
+                                      validator: (v) => Validators.requiredField(v, 'اسم الأب'),
                                     ),
                                   ),
                                 ],
@@ -373,18 +304,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                   label: 'الاسم الأول',
                                   hint: 'مثال: محمد',
                                   controller: _firstNameController,
-                                  validator: (v) => Validators.requiredField(
-                                    v,
-                                    'الاسم الأول',
-                                  ),
+                                  validator: (v) => Validators.requiredField(v, 'الاسم الأول'),
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(
                                   label: 'اسم الأب',
                                   hint: 'مثال: عبد الله',
                                   controller: _secondNameController,
-                                  validator: (v) =>
-                                      Validators.requiredField(v, 'اسم الأب'),
+                                  validator: (v) => Validators.requiredField(v, 'اسم الأب'),
                                 ),
                               ],
                             );
@@ -402,11 +329,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'اسم الجد',
                                       hint: 'مثال: سليم',
                                       controller: _thirdNameController,
-                                      validator: (v) =>
-                                          Validators.requiredField(
-                                            v,
-                                            'اسم الجد',
-                                          ),
+                                      validator: (v) => Validators.requiredField(v, 'اسم الجد'),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -415,11 +338,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'اسم العائلة',
                                       hint: 'مثال: العتيبي',
                                       controller: _lastNameController,
-                                      validator: (v) =>
-                                          Validators.requiredField(
-                                            v,
-                                            'اسم العائلة',
-                                          ),
+                                      validator: (v) => Validators.requiredField(v, 'اسم العائلة'),
                                     ),
                                   ),
                                 ],
@@ -431,18 +350,14 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                   label: 'اسم الجد',
                                   hint: 'مثال: سليم',
                                   controller: _thirdNameController,
-                                  validator: (v) =>
-                                      Validators.requiredField(v, 'اسم الجد'),
+                                  validator: (v) => Validators.requiredField(v, 'اسم الجد'),
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(
                                   label: 'اسم العائلة',
-                                  hint: 'مثال: باكرمان',
+                                  hint: 'مثال: العتيبي',
                                   controller: _lastNameController,
-                                  validator: (v) => Validators.requiredField(
-                                    v,
-                                    'اسم العائلة',
-                                  ),
+                                  validator: (v) => Validators.requiredField(v, 'اسم العائلة'),
                                 ),
                               ],
                             );
@@ -452,13 +367,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'الجنس',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
+                            const Text('الجنس', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                             const SizedBox(height: 6),
                             Row(
                               children: [
@@ -468,8 +377,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                     value: 'male',
                                     groupValue: _selectedGender,
                                     activeColor: AppColors.primary,
-                                    onChanged: (val) =>
-                                        setState(() => _selectedGender = val!),
+                                    onChanged: (val) => setState(() => _selectedGender = val!),
                                   ),
                                 ),
                                 Expanded(
@@ -478,8 +386,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                     value: 'female',
                                     groupValue: _selectedGender,
                                     activeColor: AppColors.primary,
-                                    onChanged: (val) =>
-                                        setState(() => _selectedGender = val!),
+                                    onChanged: (val) => setState(() => _selectedGender = val!),
                                   ),
                                 ),
                               ],
@@ -491,11 +398,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // SECTION 2: Academic Information
-                  _buildSectionHeader(
-                    '٢. البيانات الأكاديمية',
-                    Icons.school_outlined,
-                  ),
+                  // SECTION 2: Academic Info
+                  _buildSectionHeader('٢. البيانات الأكاديمية', Icons.school_outlined),
                   const SizedBox(height: 12),
                   CustomCard(
                     child: Column(
@@ -511,16 +415,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'المحافظة',
                                       value: _selectedGovernorate,
                                       items: AppConstants.governorates.entries
-                                          .map(
-                                            (e) => DropdownMenuItem(
-                                              value: e.key,
-                                              child: Text(e.value),
-                                            ),
-                                          )
+                                          .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                                           .toList(),
-                                      onChanged: (val) => setState(
-                                        () => _selectedGovernorate = val!,
-                                      ),
+                                      onChanged: (val) => setState(() => _selectedGovernorate = val!),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -529,15 +426,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'الصف الدراسي',
                                       value: _selectedClass,
                                       items: AppConstants.classes.entries
-                                          .map(
-                                            (e) => DropdownMenuItem(
-                                              value: e.key,
-                                              child: Text(e.value),
-                                            ),
-                                          )
+                                          .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                                           .toList(),
-                                      onChanged: (val) =>
-                                          setState(() => _selectedClass = val!),
+                                      onChanged: (val) => setState(() => _selectedClass = val!),
                                     ),
                                   ),
                                 ],
@@ -549,31 +440,18 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                   label: 'المحافظة',
                                   value: _selectedGovernorate,
                                   items: AppConstants.governorates.entries
-                                      .map(
-                                        (e) => DropdownMenuItem(
-                                          value: e.key,
-                                          child: Text(e.value),
-                                        ),
-                                      )
+                                      .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                                       .toList(),
-                                  onChanged: (val) => setState(
-                                    () => _selectedGovernorate = val!,
-                                  ),
+                                  onChanged: (val) => setState(() => _selectedGovernorate = val!),
                                 ),
                                 const SizedBox(height: 16),
                                 _buildDropdownField<int>(
                                   label: 'الصف الدراسي',
                                   value: _selectedClass,
                                   items: AppConstants.classes.entries
-                                      .map(
-                                        (e) => DropdownMenuItem(
-                                          value: e.key,
-                                          child: Text(e.value),
-                                        ),
-                                      )
+                                      .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                                       .toList(),
-                                  onChanged: (val) =>
-                                      setState(() => _selectedClass = val!),
+                                  onChanged: (val) => setState(() => _selectedClass = val!),
                                 ),
                               ],
                             );
@@ -591,11 +469,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                       label: 'اسم المدرسة',
                                       hint: 'مثال: مدرسة الملك فهد النموذجية',
                                       controller: _schoolNameController,
-                                      validator: (v) =>
-                                          Validators.requiredField(
-                                            v,
-                                            'اسم المدرسة',
-                                          ),
+                                      validator: (v) => Validators.requiredField(v, 'اسم المدرسة'),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -603,10 +477,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                     child: AppTextField(
                                       label: 'المعدل / الدرجة',
                                       hint: 'مثال: 95.5',
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
+                                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                       controller: _gradeController,
                                       validator: Validators.validateGrade,
                                     ),
@@ -620,19 +491,13 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                                   label: 'اسم المدرسة',
                                   hint: 'مثال: مدرسة الملك فهد النموذجية',
                                   controller: _schoolNameController,
-                                  validator: (v) => Validators.requiredField(
-                                    v,
-                                    'اسم المدرسة',
-                                  ),
+                                  validator: (v) => Validators.requiredField(v, 'اسم المدرسة'),
                                 ),
                                 const SizedBox(height: 16),
                                 AppTextField(
                                   label: 'المعدل / الدرجة',
                                   hint: 'مثال: 95.5',
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   controller: _gradeController,
                                   validator: Validators.validateGrade,
                                 ),
@@ -645,11 +510,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // SECTION 3: Contact Information
-                  _buildSectionHeader(
-                    '٣. بيانات التواصل',
-                    Icons.phone_android_rounded,
-                  ),
+                  // SECTION 3: Contact Info
+                  _buildSectionHeader('٣. بيانات التواصل', Icons.phone_android_rounded),
                   const SizedBox(height: 12),
                   CustomCard(
                     child: Column(
@@ -715,10 +577,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                   const SizedBox(height: 24),
 
                   // SECTION 4: Documents Upload
-                  _buildSectionHeader(
-                    '٤. المستندات والشهادات',
-                    Icons.file_present_rounded,
-                  ),
+                  _buildSectionHeader('٤. المستندات والشهادات', Icons.file_present_rounded),
                   const SizedBox(height: 12),
                   CustomCard(
                     child: Column(
@@ -728,9 +587,7 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
                           subLabel: 'يدعم صيغ JPG, PNG حتى 5 ميجابايت',
                           isRequired: true,
                           selectedFile: _certImage,
-                          errorText: _certImageError
-                              ? 'يرجى اختيار صورة الشهادة المطلوبة'
-                              : null,
+                          errorText: _certImageError ? 'يرجى اختيار صورة الشهادة المطلوبة' : null,
                           onImageSelected: (file) {
                             setState(() {
                               _certImage = file;
@@ -756,8 +613,8 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
 
                   // Submit Action Button
                   AppButton(
-                    text: 'إرسال طلب التسجيل',
-                    icon: Icons.send_rounded,
+                    text: 'تأكيد وحفظ بيانات الطالب',
+                    icon: Icons.save_rounded,
                     height: 54,
                     isLoading: state.isSubmitting,
                     onPressed: state.isSubmitting ? null : _submitForm,
@@ -780,9 +637,9 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
         ),
       ],
     );

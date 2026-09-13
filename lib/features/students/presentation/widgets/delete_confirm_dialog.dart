@@ -47,16 +47,19 @@ class DeleteConfirmDialog extends ConsumerWidget {
               Text(
                 'هل أنت متأكد من حذف هذا الطالب؟',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.error,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.error,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               Text(
                 'سيتم حذف بيانات الطالب (${student.fullName}) ذو الرقم الأكاديمي (#${student.id}) نهائياً من قاعدة البيانات ولا يمكن استرجاعها.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -69,7 +72,10 @@ class DeleteConfirmDialog extends ConsumerWidget {
                   ),
                   child: Text(
                     actionState.errorMessage!,
-                    style: const TextStyle(color: AppColors.error, fontSize: 12),
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -86,7 +92,7 @@ class DeleteConfirmDialog extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: AppButton(
-                      text: 'تأكيد الحذف',
+                      text: 'تأكيد ',
                       variant: AppButtonVariant.danger,
                       isLoading: actionState.isSubmitting,
                       onPressed: () async {

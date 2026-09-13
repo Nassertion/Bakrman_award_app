@@ -39,6 +39,27 @@ class Student {
     return parts.join(' ');
   }
 
+  String? get formattedImageUrl {
+    if (imageUrl == null) return null;
+    final trimmed = imageUrl!.trim();
+    if (trimmed.isEmpty || trimmed == 'null') return null;
+
+    String url = trimmed;
+    if (url.startsWith('http://')) {
+      url = url.replaceFirst('http://', 'https://');
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      const origin = 'https://studentshonoringsystem-o46s.onrender.com';
+      if (url.startsWith('/')) {
+        url = '$origin$url';
+      } else {
+        url = '$origin/$url';
+      }
+    }
+    return url;
+  }
+
   factory Student.fromJson(Map<String, dynamic> json) {
     double parsedGrade = 0.0;
     if (json['grade'] != null) {

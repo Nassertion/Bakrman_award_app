@@ -6,6 +6,7 @@ import '../../features/auth/presentation/admin_login_screen.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/registration/presentation/registration_screen.dart';
 import '../../features/students/presentation/admin_dashboard_screen.dart';
+import '../../features/students/presentation/admin_registration_screen.dart';
 import '../../features/students/presentation/student_detail_screen.dart';
 import 'auth_change_notifier.dart';
 
@@ -66,6 +67,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin',
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/admin/registration',
+        builder: (context, state) => const AdminRegistrationScreen(),
       ),
       GoRoute(
         path: '/admin/students/:id',

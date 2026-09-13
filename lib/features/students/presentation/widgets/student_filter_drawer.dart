@@ -79,16 +79,21 @@ class _StudentFilterDrawerState extends ConsumerState<StudentFilterDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: mediaQuery.size.height * 0.85,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        top: 20,
+        left: 20,
+        right: 20,
+        bottom: mediaQuery.viewInsets.bottom + 20,
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -99,30 +104,35 @@ class _StudentFilterDrawerState extends ConsumerState<StudentFilterDrawer> {
               children: [
                 const Icon(Icons.filter_alt_rounded, color: AppColors.primary),
                 const SizedBox(width: 10),
-                Text(
-                  'تصفية وفرز الطلاب',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Text(
+                    'تصفية وفرز الطلاب',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
                 ),
-                const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
-            const Divider(height: 24),
+            const Divider(height: 20),
 
             // Class Filter
             const Text('الصف الدراسي', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             DropdownButtonFormField<int?>(
+              isExpanded: true,
               value: _classLevel,
               decoration: const InputDecoration(hintText: 'الكل'),
               items: [
-                const DropdownMenuItem(value: null, child: Text('جميع الصفوف')),
-                ...AppConstants.classes.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+                const DropdownMenuItem(value: null, child: Text('جميع الصفوف', overflow: TextOverflow.ellipsis)),
+                ...AppConstants.classes.entries.map((e) => DropdownMenuItem(
+                      value: e.key,
+                      child: Text(e.value, overflow: TextOverflow.ellipsis),
+                    )),
               ],
               onChanged: (val) => setState(() => _classLevel = val),
             ),
@@ -132,26 +142,31 @@ class _StudentFilterDrawerState extends ConsumerState<StudentFilterDrawer> {
             const Text('الجنس', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             DropdownButtonFormField<String?>(
+              isExpanded: true,
               value: _gender,
               decoration: const InputDecoration(hintText: 'الكل'),
               items: const [
-                DropdownMenuItem(value: null, child: Text('الكل (ذكور وإناث)')),
-                DropdownMenuItem(value: 'male', child: Text('ذكور')),
-                DropdownMenuItem(value: 'female', child: Text('إناث')),
+                DropdownMenuItem(value: null, child: Text('الكل (ذكور وإناث)', overflow: TextOverflow.ellipsis)),
+                DropdownMenuItem(value: 'male', child: Text('ذكور', overflow: TextOverflow.ellipsis)),
+                DropdownMenuItem(value: 'female', child: Text('إناث', overflow: TextOverflow.ellipsis)),
               ],
               onChanged: (val) => setState(() => _gender = val),
             ),
             const SizedBox(height: 16),
 
             // Governorate Filter
-            const Text('المحافظة', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('المافظة', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             DropdownButtonFormField<int?>(
+              isExpanded: true,
               value: _governorate,
               decoration: const InputDecoration(hintText: 'الكل'),
               items: [
-                const DropdownMenuItem(value: null, child: Text('جميع المحافظات')),
-                ...AppConstants.governorates.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+                const DropdownMenuItem(value: null, child: Text('جميع المحافظات', overflow: TextOverflow.ellipsis)),
+                ...AppConstants.governorates.entries.map((e) => DropdownMenuItem(
+                      value: e.key,
+                      child: Text(e.value, overflow: TextOverflow.ellipsis),
+                    )),
               ],
               onChanged: (val) => setState(() => _governorate = val),
             ),
@@ -169,56 +184,92 @@ class _StudentFilterDrawerState extends ConsumerState<StudentFilterDrawer> {
             // Grade Range
             const Text('نطاق الدرجة / المعدل', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _gradeMoreThanController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(hintText: 'أكبر من (مثال: 90)'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: _gradeLessThanController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(hintText: 'أقل من (مثال: 100)'),
-                  ),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 400) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _gradeMoreThanController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(hintText: 'أكبر من (مثال: 90)'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _gradeLessThanController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(hintText: 'أقل من (مثال: 100)'),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return Column(
+                  children: [
+                    TextField(
+                      controller: _gradeMoreThanController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(hintText: 'أكبر من (مثال: 90)'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _gradeLessThanController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(hintText: 'أقل من (مثال: 100)'),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
 
             // Sorting
             const Text('ترتيب حسب', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String?>(
-                    value: _sortBy,
-                    decoration: const InputDecoration(hintText: 'حسب'),
-                    items: const [
-                      DropdownMenuItem(value: null, child: Text('افتراضي')),
-                      DropdownMenuItem(value: 'grade', child: Text('الدرجة / المعدل')),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final sortByField = DropdownButtonFormField<String?>(
+                  isExpanded: true,
+                  value: _sortBy,
+                  decoration: const InputDecoration(hintText: 'حسب'),
+                  items: const [
+                    DropdownMenuItem(value: null, child: Text('افتراضي', overflow: TextOverflow.ellipsis)),
+                    DropdownMenuItem(value: 'grade', child: Text('الدرجة / المعدل', overflow: TextOverflow.ellipsis)),
+                  ],
+                  onChanged: (val) => setState(() => _sortBy = val),
+                );
+
+                final sortOrderField = DropdownButtonFormField<String?>(
+                  isExpanded: true,
+                  value: _sortOrder,
+                  decoration: const InputDecoration(hintText: 'الاتجاه'),
+                  items: const [
+                    DropdownMenuItem(value: 'desc', child: Text('تنازلي (الأعلى أولاً)', overflow: TextOverflow.ellipsis)),
+                    DropdownMenuItem(value: 'asc', child: Text('تصاعدي (الأدنى أولاً)', overflow: TextOverflow.ellipsis)),
+                  ],
+                  onChanged: (val) => setState(() => _sortOrder = val),
+                );
+
+                if (constraints.maxWidth > 400) {
+                  return Row(
+                    children: [
+                      Expanded(child: sortByField),
+                      const SizedBox(width: 12),
+                      Expanded(child: sortOrderField),
                     ],
-                    onChanged: (val) => setState(() => _sortBy = val),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonFormField<String?>(
-                    value: _sortOrder,
-                    decoration: const InputDecoration(hintText: 'الاتجاه'),
-                    items: const [
-                      DropdownMenuItem(value: 'desc', child: Text('تنازلي (الأعلى أولاً)')),
-                      DropdownMenuItem(value: 'asc', child: Text('تصاعدي (الأدنى أولاً)')),
-                    ],
-                    onChanged: (val) => setState(() => _sortOrder = val),
-                  ),
-                ),
-              ],
+                  );
+                }
+                return Column(
+                  children: [
+                    sortByField,
+                    const SizedBox(height: 10),
+                    sortOrderField,
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
 

@@ -162,108 +162,185 @@ class _EditStudentDialogState extends ConsumerState<EditStudentDialog> {
                     const SizedBox(height: 16),
                   ],
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'الاسم الأول',
-                          controller: _firstNameController,
-                          validator: (v) => Validators.requiredField(v, 'الاسم الأول'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppTextField(
-                          label: 'اسم الأب',
-                          controller: _secondNameController,
-                          validator: (v) => Validators.requiredField(v, 'اسم الأب'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'اسم الجد',
-                          controller: _thirdNameController,
-                          validator: (v) => Validators.requiredField(v, 'اسم الجد'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppTextField(
-                          label: 'اسم العائلة',
-                          controller: _lastNameController,
-                          validator: (v) => Validators.requiredField(v, 'اسم العائلة'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 450) {
+                        return Row(
                           children: [
-                            const Text('المحافظة', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<int>(
-                              isExpanded: true,
-                              value: _governorate,
-                              items: AppConstants.governorates.entries
-                                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                                  .toList(),
-                              onChanged: (val) => setState(() => _governorate = val!),
+                            Expanded(
+                              child: AppTextField(
+                                label: 'الاسم الأول',
+                                controller: _firstNameController,
+                                validator: (v) => Validators.requiredField(v, 'الاسم الأول'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: AppTextField(
+                                label: 'اسم الأب',
+                                controller: _secondNameController,
+                                validator: (v) => Validators.requiredField(v, 'اسم الأب'),
+                              ),
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('الصف الدراسي', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                            const SizedBox(height: 6),
-                            DropdownButtonFormField<int>(
-                              isExpanded: true,
-                              value: _classLevel,
-                              items: AppConstants.classes.entries
-                                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                                  .toList(),
-                              onChanged: (val) => setState(() => _classLevel = val!),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                        );
+                      }
+                      return Column(
+                        children: [
+                          AppTextField(
+                            label: 'الاسم الأول',
+                            controller: _firstNameController,
+                            validator: (v) => Validators.requiredField(v, 'الاسم الأول'),
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextField(
+                            label: 'اسم الأب',
+                            controller: _secondNameController,
+                            validator: (v) => Validators.requiredField(v, 'اسم الأب'),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppTextField(
-                          label: 'اسم المدرسة',
-                          controller: _schoolNameController,
-                          validator: (v) => Validators.requiredField(v, 'اسم المدرسة'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppTextField(
-                          label: 'المعدل / الدرجة',
-                          controller: _gradeController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: Validators.validateGrade,
-                        ),
-                      ),
-                    ],
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 450) {
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: AppTextField(
+                                label: 'اسم الجد',
+                                controller: _thirdNameController,
+                                validator: (v) => Validators.requiredField(v, 'اسم الجد'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: AppTextField(
+                                label: 'اسم العائلة',
+                                controller: _lastNameController,
+                                validator: (v) => Validators.requiredField(v, 'اسم العائلة'),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return Column(
+                        children: [
+                          AppTextField(
+                            label: 'اسم الجد',
+                            controller: _thirdNameController,
+                            validator: (v) => Validators.requiredField(v, 'اسم الجد'),
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextField(
+                            label: 'اسم العائلة',
+                            controller: _lastNameController,
+                            validator: (v) => Validators.requiredField(v, 'اسم العائلة'),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final govField = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('المحافظة', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<int>(
+                            isExpanded: true,
+                            value: _governorate,
+                            items: AppConstants.governorates.entries
+                                .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value, overflow: TextOverflow.ellipsis)))
+                                .toList(),
+                            onChanged: (val) => setState(() => _governorate = val!),
+                          ),
+                        ],
+                      );
+
+                      final classField = Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('الصف الدراسي', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          const SizedBox(height: 6),
+                          DropdownButtonFormField<int>(
+                            isExpanded: true,
+                            value: _classLevel,
+                            items: AppConstants.classes.entries
+                                .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value, overflow: TextOverflow.ellipsis)))
+                                .toList(),
+                            onChanged: (val) => setState(() => _classLevel = val!),
+                          ),
+                        ],
+                      );
+
+                      if (constraints.maxWidth > 450) {
+                        return Row(
+                          children: [
+                            Expanded(child: govField),
+                            const SizedBox(width: 12),
+                            Expanded(child: classField),
+                          ],
+                        );
+                      }
+                      return Column(
+                        children: [
+                          govField,
+                          const SizedBox(height: 12),
+                          classField,
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 450) {
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: AppTextField(
+                                label: 'اسم المدرسة',
+                                controller: _schoolNameController,
+                                validator: (v) => Validators.requiredField(v, 'اسم المدرسة'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: AppTextField(
+                                label: 'المعدل / الدرجة',
+                                controller: _gradeController,
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                validator: Validators.validateGrade,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return Column(
+                        children: [
+                          AppTextField(
+                            label: 'اسم المدرسة',
+                            controller: _schoolNameController,
+                            validator: (v) => Validators.requiredField(v, 'اسم المدرسة'),
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextField(
+                            label: 'المعدل / الدرجة',
+                            controller: _gradeController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            validator: Validators.validateGrade,
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
 

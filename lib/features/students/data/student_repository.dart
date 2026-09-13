@@ -42,12 +42,32 @@ class StudentRepository {
     try {
       final response = await dioClient.dio.get(ApiConfig.adminStudentById(id));
       final data = response.data;
-      if (data is Map<String, dynamic> && data['data'] != null) {
-        final studentMap = data['data'] as Map<String, dynamic>;
-        return Student.fromJson(studentMap);
+
+      Map<String, dynamic>? studentMap;
+      if (data is Map) {
+        final mapData = Map<String, dynamic>.from(data);
+        if (mapData['data'] is Map) {
+          studentMap = Map<String, dynamic>.from(mapData['data'] as Map);
+        } else if (mapData['student'] is Map) {
+          studentMap = Map<String, dynamic>.from(mapData['student'] as Map);
+        } else {
+          studentMap = mapData;
+        }
       }
+
+      if (studentMap != null) {
+        final student = Student.fromJson(studentMap);
+        final rawImg = student.imageUrl;
+        final formattedImg = student.formattedImageUrl;
+        debugPrint(
+          '[StudentDetailAPI] GET ${ApiConfig.adminStudentById(id)} | Status: ${response.statusCode} | RawImageUrl: $rawImg | FormattedImageUrl: $formattedImg',
+        );
+        return student;
+      }
+
       throw ErrorHandler.parseResponseError(response.statusCode, data);
     } catch (e) {
+      debugPrint('[StudentDetailAPI] GET ${ApiConfig.adminStudentById(id)} Error: $e');
       throw ErrorHandler.handle(e);
     }
   }

@@ -203,7 +203,7 @@ class _StudentListContentState extends ConsumerState<StudentListContent> {
                 _searchController.clear();
                 ref.read(studentListControllerProvider.notifier).clearFilter();
               } else {
-                context.go('/registration');
+                context.go('/admin/registration');
               }
             },
           ),

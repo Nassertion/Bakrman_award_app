@@ -77,7 +77,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   final actionButton = ElevatedButton.icon(
                     icon: const Icon(Icons.add_rounded, size: 18),
                     label: const Text('تسجيل طالب جديد'),
-                    onPressed: () => context.go('/registration'),
+                    onPressed: () => context.go('/admin/registration'),
                   );
 
                   if (headerConstraints.maxWidth > 600) {
@@ -257,7 +257,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ListTile(
                     leading: const Icon(Icons.app_registration_outlined),
                     title: const Text('نموذج تسجيل طالب'),
-                    onTap: () => context.go('/registration'),
+                    onTap: () => context.go('/admin/registration'),
                   ),
                   const Spacer(),
                   const Divider(),
